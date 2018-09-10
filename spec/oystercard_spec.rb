@@ -17,36 +17,56 @@ describe Oystercard do
     end
   end
 
-  context "testing Oystercard#deduct" do
 
-    it "Oystercard#deduct reduces balance" do
-      subject.top_up(20)
-      expect(subject.deduct(4)).to eq 16
+  # context "testing Oystercard#deduct" do
+  #
+  #   it "Oystercard#deduct reduces balance" do
+  #     subject.top_up(20)
+  #     expect(subject.deduct(4)).to eq 16
+  #   end
+  # end
+  describe "Oystercard#touch_in requires double tube_stop variable" do
+
+    let(:tube_stop) { double :tube_stop }
+
+    context "testing touch in" do
+
+      it "Oystercard#touch_in sets card as 'in use'" do
+        subject.top_up(5)
+        expect(subject.touch_in(tube_stop)).to eq true
+      end
+
+      it "Oystercard#touch_in throws error due to insufficient funds" do
+        expect { subject.touch_in(tube_stop) }.to raise_error("Insufficient funds. Balance: #{subject.balance}")
+      end
+
+      it "Oystercard#touch_in remembers station" do
+        subject.top_up(5)
+        subject.touch_in(tube_stop)
+        expect(subject.station).to eq tube_stop
+      end
     end
-  end
 
-  context "testing touch in/out support" do
+    context "testing touch out" do
 
-    it "Oystercard#touch_in sets card as 'in use'" do
-      subject.top_up(5)
-      expect(subject.touch_in).to eq true
+      it "Oystercard#touch_out sets card to 'not in use'" do
+        subject.top_up(5)
+        subject.touch_in(tube_stop)
+        expect(subject.touch_out).to eq false
+      end
+
+      it "Oystercard#touch_out deduct cost from balance" do
+        subject.top_up(5)
+        subject.touch_in(tube_stop)
+        expect {subject.touch_out}.to change {subject.balance}.by(-Oystercard::MIN_CHARGE)
+      end
+
+      it "Oystercard#in_journey?" do
+        subject.top_up(5)
+        subject.touch_in(tube_stop)
+        expect(subject.in_journey?).to eq true
+      end
+
     end
-
-    it "Oystercard#touch_in throws error due to insufficient funds" do
-      expect { subject.touch_in }.to raise_error("Insufficient funds. Balance: #{subject.balance}")
-    end
-
-    it "Oystercard#touch_out sets card to 'not in use'" do
-      subject.top_up(5)
-      subject.touch_in
-      expect(subject.touch_out).to eq false
-    end
-
-    it "Oystercard#in_journey?" do
-      subject.top_up(5)
-      subject.touch_in
-      expect(subject.in_journey?).to eq true
-    end
-
   end
 end
