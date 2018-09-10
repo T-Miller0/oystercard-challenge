@@ -27,7 +27,8 @@ describe Oystercard do
   # end
   describe "Oystercard#touch_in requires double tube_stop variable" do
 
-    let(:tube_stop) { double :tube_stop }
+    let(:tube_stop) { double :entry_station }
+    let(:tube_stop2) { double :exit_station }
 
     context "testing touch in" do
 
@@ -43,30 +44,43 @@ describe Oystercard do
       it "Oystercard#touch_in remembers station" do
         subject.top_up(5)
         subject.touch_in(tube_stop)
-        expect(subject.station).to eq tube_stop
+        expect(subject.entry_station).to eq tube_stop
       end
     end
 
     context "testing touch out" do
 
-      it "Oystercard#touch_out sets card to 'not in use'" do
+      before(:each) do
         subject.top_up(5)
         subject.touch_in(tube_stop)
-        expect(subject.touch_out).to eq false
+      end
+
+      it "Oystercard#touch_out sets card to 'not in use'" do
+        expect(subject.touch_out(tube_stop2)).to eq false
       end
 
       it "Oystercard#touch_out deduct cost from balance" do
-        subject.top_up(5)
-        subject.touch_in(tube_stop)
-        expect {subject.touch_out}.to change {subject.balance}.by(-Oystercard::MIN_CHARGE)
+        expect {subject.touch_out(tube_stop2)}.to change {subject.balance}.by(-Oystercard::MIN_CHARGE)
       end
 
       it "Oystercard#in_journey?" do
-        subject.top_up(5)
-        subject.touch_in(tube_stop)
         expect(subject.in_journey?).to eq true
       end
 
+      it "Oystercard#touch_out remembers station" do
+        subject.touch_out(tube_stop2)
+        expect(subject.journey_history).to eq [{entry_station: tube_stop, exit_station: tube_stop2}]
+      end
+
     end
+
+    it "Oystercard#journey_history returns empty array" do
+      expect(subject.journey_history).to eq []
+    end
+
+
   end
+
+
+
 end
