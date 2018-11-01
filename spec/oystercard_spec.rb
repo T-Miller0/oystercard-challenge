@@ -44,7 +44,7 @@ describe Oystercard do
       it "Oystercard#touch_in remembers station" do
         subject.top_up(5)
         subject.touch_in(tube_stop)
-        expect(subject.entry_station).to eq tube_stop
+        expect(subject.journey.entry_station).to eq tube_stop
       end
     end
 
@@ -56,7 +56,7 @@ describe Oystercard do
       end
 
       it "Oystercard#touch_out sets card to 'not in use'" do
-        expect(subject.touch_out(tube_stop2)).to eq false
+        expect(subject.touch_out(tube_stop2)).to eq { entry_station: tube_stop, exit_station: tube_stop2 }
       end
 
       it "Oystercard#touch_out deduct cost from balance" do
@@ -69,7 +69,7 @@ describe Oystercard do
 
       it "Oystercard#touch_out remembers station" do
         subject.touch_out(tube_stop2)
-        expect(subject.journey_history).to eq [{entry_station: tube_stop, exit_station: tube_stop2}]
+        expect(subject.journey_history).to eq [{entry_station: nil, exit_station: tube_stop2}]
       end
 
     end
