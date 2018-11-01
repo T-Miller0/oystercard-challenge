@@ -1,8 +1,9 @@
 class Journey
 
+  attr_reader :entry_station
   def initialize
-    @journey_history = []
     @in_use = false
+    @entry_station = nil
   end
 
   def touch_in(tube_stop)
@@ -11,9 +12,10 @@ class Journey
   end
 
   def touch_out(tube_stop)
-    @journey_history << {entry_station: @entry_station, exit_station: tube_stop}
-    @entry_station = nil
+    journey = {entry_station: entry_station, exit_station: tube_stop}
+    entry_station = nil
     @in_use = false
+    journey
   end
 
   def in_journey?
